@@ -2,6 +2,7 @@ import express, { Request, Response } from "express"
 import initDB from "./config/db"
 import { userRoutes } from "./modules/users/users.routes"
 import { authRoutes } from "./modules/auth/auth.routes"
+import { vehicleRoutes } from "./modules/vehicles/vehicles.routes"
 
 
 const app = express()
@@ -28,6 +29,7 @@ app.use('/api/v1/', userRoutes)
 // *---------------user login------------
 app.use('/api/v1/', authRoutes)
 
-
+//*----------------booking route----------
+app.use('/api/v1/vehicles', vehicleRoutes)
 
 export default app

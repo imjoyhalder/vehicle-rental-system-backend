@@ -23,7 +23,6 @@ const authorize = (...allowedRoles: string[]) => {
             const decoded = jwt.verify(token!, config.jwtSecret as string) as JwtPayload
             req.user = decoded;
 
-
             // Role based access 
             if (allowedRoles.length && !allowedRoles.includes(decoded.role)) {
                 return res.status(403).json({
@@ -49,7 +48,6 @@ const authorize = (...allowedRoles: string[]) => {
                 }
             }
 
-            // If passes all checks → allow
             next();
 
         } catch (error: any) {
