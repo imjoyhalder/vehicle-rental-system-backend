@@ -7,7 +7,7 @@ import config from "../../config"
 const loginUser = async (email: string, password: string) => {
     const result = await pool.query(`SELECT * FROM users WHERE email=$1`, [email])
 
-    console.log(result);
+
     if (!result.rows[0]) {
         return null;
     }
@@ -18,6 +18,7 @@ const loginUser = async (email: string, password: string) => {
     }
 
     const payload = {
+        id: user.id,
         name: user.name,
         email: user.email,
         role: user.role

@@ -3,6 +3,7 @@ import initDB from "./config/db"
 import { userRoutes } from "./modules/users/users.routes"
 import { authRoutes } from "./modules/auth/auth.routes"
 
+
 const app = express()
 app.use(express.json())
 app.use(express.urlencoded())

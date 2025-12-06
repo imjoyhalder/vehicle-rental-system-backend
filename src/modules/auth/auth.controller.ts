@@ -3,7 +3,7 @@ import { authServices } from "./auth.service";
 
 const loginUser = async (req: Request, res: Response) => {
     const { email, password } = req.body
-    console.log(password);
+
     try {
         const result = await authServices.loginUser(email, password)
         if (result === null) {
