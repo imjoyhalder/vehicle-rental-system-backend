@@ -1,6 +1,7 @@
 import express, { Request, Response } from "express"
 import initDB from "./config/db"
 import { userRoutes } from "./modules/users/users.routes"
+import { authRoutes } from "./modules/auth/auth.routes"
 
 const app = express()
 app.use(express.json())
@@ -21,6 +22,10 @@ app.get('/', (req: Request, res: Response)=>{
 
 //*-------------- user routes-----------
 app.use('/api/v1/', userRoutes)
+
+
+// *---------------user login------------
+app.use('/api/v1/', authRoutes)
 
 
 
