@@ -9,6 +9,29 @@ const createVehicle = async (payload: Record<string, unknown>) => {
 }
 
 
+const getAllVehicle = async ()=>{
+    const result = await pool.query(`SELECT * FROM vehicles`)
+    return result.rows; 
+}
+
+const getSingleVehicle = async(vehicleId: string)=>{
+    const vehicle = await pool.query(`SELECT * FROM vehicles WHERE id=$1`, [vehicleId])
+    return vehicle; 
+}
+
+const deleteSingleVehicle = async(vehicleId: string)=>{
+    const vehicle = await pool.query(`DELETE FROM vehicles WHERE id=$1`, [vehicleId]); 
+    return vehicle; 
+}
+
+const updateVehicle = async(payload: Record<string, unknown>)=>{
+    const updatedVehicle = await pool.query(`UPDATE vehicles SET `)
+}
+
 export const vehicleServices ={
     createVehicle, 
+    getAllVehicle, 
+    getSingleVehicle,
+    deleteSingleVehicle,
+    updateVehicle,
 }

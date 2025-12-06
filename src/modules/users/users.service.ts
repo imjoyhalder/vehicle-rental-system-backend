@@ -28,6 +28,7 @@ const getAllUser = async () => {
 
 const getSingleUser = async (id: string | undefined) => {
     const result = await pool.query(`SELECT * FROM users WHERE id = $1`, [id])
+    result.rows.length>0 ? delete result.rows[0].password : result
     return result;
 }
 
