@@ -15,7 +15,6 @@ const createBooking = async (req: Request, res: Response) => {
     }
 };
 
-
 const getAllBooking = async (req: Request, res: Response) => {
     try {
         const result = await bookingServices.getAllBooking();
@@ -33,9 +32,17 @@ const getAllBooking = async (req: Request, res: Response) => {
     }
 }
 
-// const getSingleBooking = async
+const getSingleBooking = async (req: Request, res: Response) => {
+    try {
+        const result = await bookingServices.getSingleBooking(req, req.params.id!)
+        res.status(200).json(result)
+    } catch (error: any) {
+
+    }
+}
 
 export const bookingControllers = {
-    createBooking, 
-    getAllBooking
+    createBooking,
+    getAllBooking, 
+    getSingleBooking
 }

@@ -7,5 +7,7 @@ const router = Router()
 
 router.post('/', bookingControllers.createBooking)
 router.get('/', authorize('admin'),bookingControllers.getAllBooking)
+router.get('/:id', bookingControllers.getSingleBooking)
+
 
 export const bookingRoutes = router; 
