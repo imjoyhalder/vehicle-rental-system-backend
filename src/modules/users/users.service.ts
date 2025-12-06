@@ -16,24 +16,28 @@ const createUser = async (payload: Record<string, unknown>) => {
 
         return result;
     }
-    else{
+    else {
         return "Password size minimum 6 character"
     }
 }
 
 const getAllUser = async () => {
     const result = await pool.query(`SELECT * FROM users`)
+    result.rows.map(user => delete user.password)
     return result
 }
 
 const getSingleUser = async (id: string | undefined) => {
     const result = await pool.query(`SELECT * FROM users WHERE id = $1`, [id])
-    result.rows.length>0 ? delete result.rows[0].password : result
+    result.rows.length > 0 ? delete result.rows[0].password : result
     return result;
 }
 
-const updateUser = async (name: string, email: string, id: string | undefined) => {
-    const result = await pool.query(`UPDATE users SET name=$1, email=$2 WHERE id=$3 RETURNING *`, [name, email, id])
+const updateUser = async (id: string, payload: Record<string, unknown>) => {
+    const { name, email, phone, role } = payload
+    const result = await pool.query(`UPDATE users SET name=$1, email=$2, phone=$3, role=$4 WHERE id=$5 RETURNING *`,
+        [name, email, phone, role, id])
+    result?.rowCount! > 0 ? delete result.rows[0].password : result
     return result;
 }
 
