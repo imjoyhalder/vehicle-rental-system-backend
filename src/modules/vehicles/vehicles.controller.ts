@@ -83,6 +83,10 @@ const deleteSingleVehicle = async (req: Request, res: Response) => {
     }
 }
 
+const updateVehicle = async (req: Request, res: Response)=>{
+    
+}
+
 export const vehicleControllers = {
     createVehicle,
     getAllVehicle,

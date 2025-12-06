@@ -3,6 +3,7 @@ import initDB from "./config/db"
 import { userRoutes } from "./modules/users/users.routes"
 import { authRoutes } from "./modules/auth/auth.routes"
 import { vehicleRoutes } from "./modules/vehicles/vehicles.routes"
+import { bookingRoutes } from "./modules/bookings/booking.routes"
 
 
 const app = express()
@@ -29,7 +30,10 @@ app.use('/api/v1/', userRoutes)
 // *---------------user login------------
 app.use('/api/v1/', authRoutes)
 
-//*----------------booking route----------
+//*----------------vehicle route----------
 app.use('/api/v1/vehicles', vehicleRoutes)
+
+//*----------------booking route----------
+app.use('/api/v1/booking', bookingRoutes)
 
 export default app
