@@ -2,14 +2,15 @@ import { JwtPayload, verify } from 'jsonwebtoken';
 import jwt from 'jsonwebtoken';
 import { Request } from "express";
 import { pool } from "../../config/db";
-import { vehicleServices } from "../vehicles/vehicles.service";
-import config from '../../config';
+
+
 
 
 const createBooking = async (payload: Record<string, unknown>) => {
     const { customer_id, vehicle_id, rent_start_date, rent_end_date } = payload;
 
-    const vehicle = await vehicleServices.getSingleVehicle(vehicle_id as string);
+    const vehicle = await pool.query(`SELECT * FROM vehicles WHERE id=$1`, [vehicle_id])
+    console.log(vehicle)
     if (vehicle.rows.length === 0) {
         return { success: false, message: "Vehicle not found" };
     }
@@ -20,7 +21,7 @@ const createBooking = async (payload: Record<string, unknown>) => {
         return { success: false, message: "Vehicle already booked" };
     }
 
-    const now = new Date(); 
+    const now = new Date();
     const start = new Date(rent_start_date as string);
     const end = new Date(rent_end_date as string);
 
@@ -65,9 +66,30 @@ const createBooking = async (payload: Record<string, unknown>) => {
     };
 };
 
+
 const getAllBooking = async (user: JwtPayload) => {
+    const now = new Date();
 
     if (user.role === "admin") {
+        await pool.query(
+            `UPDATE bookings
+            SET status='returned'
+            WHERE status='active' AND rent_end_date <= $1`,
+            [now]
+        );
+
+        const expiredBookings = await pool.query(
+            `SELECT vehicle_id FROM bookings WHERE status='returned' AND rent_end_date <= $1`,
+            [now]
+        );
+
+        // vehicle update 
+        for (let b of expiredBookings.rows) {
+            await pool.query(
+                `UPDATE vehicles SET availability_status='available' WHERE id=$1`,
+                [b.vehicle_id]
+            );
+        }
 
         const bookings = await pool.query(`SELECT * FROM bookings`);
 
@@ -79,7 +101,7 @@ const getAllBooking = async (user: JwtPayload) => {
             );
 
             const vehicle = await pool.query(
-                `SELECT vehicle_name, registration_number FROM vehicles WHERE id = $1`,
+                `SELECT vehicle_name, registration_number, availability_status FROM vehicles WHERE id = $1`,
                 [b.vehicle_id]
             );
 
@@ -93,13 +115,29 @@ const getAllBooking = async (user: JwtPayload) => {
         return {
             success: true,
             message: "Bookings retrieved successfully",
-            role: "admin",
             data: results,
         };
     }
 
-    // ---------- CUSTOMER ----------
     if (user.role === "customer") {
+        await pool.query(
+            `UPDATE bookings
+            SET status='returned'
+            WHERE status='active' AND customer_id=$1 AND rent_end_date <= $2`,
+            [user.id, now]
+        );
+
+        const expiredBookings = await pool.query(
+            `SELECT vehicle_id FROM bookings WHERE status='returned' AND customer_id=$1 AND rent_end_date <= $2`,
+            [user.id, now]
+        );
+
+        for (let b of expiredBookings.rows) {
+            await pool.query(
+                `UPDATE vehicles SET availability_status='available' WHERE id=$1`,
+                [b.vehicle_id]
+            );
+        }
 
         const bookings = await pool.query(
             `SELECT * FROM bookings WHERE customer_id = $1 ORDER BY id DESC`,
@@ -109,7 +147,7 @@ const getAllBooking = async (user: JwtPayload) => {
         const results = [];
         for (let b of bookings.rows) {
             const vehicle = await pool.query(
-                `SELECT vehicle_name, registration_number, type FROM vehicles WHERE id = $1`,
+                `SELECT vehicle_name, registration_number, type, availability_status FROM vehicles WHERE id = $1`,
                 [b.vehicle_id]
             );
 
@@ -132,109 +170,21 @@ const getAllBooking = async (user: JwtPayload) => {
         };
     }
 
-    // ---------- OTHER ----------
-    return "UNAUTHORIZED";
-};
-
-const getSingleBooking = async (req: Request, bookingId: string) => {
-    const user = req.user as JwtPayload;
-
-    // fetch booking info
-    const bookingResult = await pool.query(
-        `SELECT * FROM bookings WHERE id = $1`,
-        [bookingId]
-    );
-
-    if (bookingResult.rows.length === 0) {
-        return {
-            success: false,
-            message: "Booking not found",
-        };
-    }
-
-    const booking = bookingResult.rows[0];
-
-    const customerId = booking.customer_id;
-    const vehicleId = booking.vehicle_id;
-
-    // ---------------------------
-    // VEHICLE INFO (both roles)
-    // ---------------------------
-    const vehicleResult = await pool.query(
-        `SELECT vehicle_name, registration_number, type 
-        FROM vehicles WHERE id = $1`,
-        [vehicleId]
-    );
-
-    const vehicle = vehicleResult.rows[0];
-
-    // ---------------------------
-    // ADMIN VIEW
-    // ---------------------------
-    if (user.role === "admin") {
-        const customerResult = await pool.query(
-            `SELECT id, name, email FROM users WHERE id = $1`,
-            [customerId]
-        );
-
-        const customer = customerResult.rows[0];
-
-        return {
-            success: true,
-            message: "Booking retrieved successfully",
-            role: "admin",
-            data: [
-                {
-                    ...booking,
-                    customer: {
-                        id: customer.id,
-                        name: customer.name,
-                        email: customer.email,
-                    },
-                    vehicle: {
-                        vehicle_name: vehicle.vehicle_name,
-                        registration_number: vehicle.registration_number,
-                        type: vehicle.type,
-                    },
-                },
-            ],
-        };
-    }
-
-    // ---------------------------
-    // CUSTOMER VIEW
-    // ---------------------------
-    return {
-        success: true,
-        message: "Your booking retrieved successfully",
-        role: "customer",
-        data: [
-            {
-                id: booking.id,
-                vehicle_id: booking.vehicle_id,
-                rent_start_date: booking.rent_start_date,
-                rent_end_date: booking.rent_end_date,
-                total_price: booking.total_price,
-                status: booking.status,
-                vehicle: {
-                    vehicle_name: vehicle.vehicle_name,
-                    registration_number: vehicle.registration_number,
-                    type: vehicle.type,
-                },
-            },
-        ],
-    };
+    return { success: false, message: "UNAUTHORIZED" };
 };
 
 const updateBooking = async (bookingId: string, status: string, user: JwtPayload) => {
     if (!["cancelled", "returned"].includes(status)) {
-        return { statusCode: 400, success: false, message: "Invalid status. Use 'cancelled' or 'returned'." };
+        return {
+            statusCode: 400,
+            success: false,
+            message: "Invalid status. Use 'cancelled' or 'returned'."
+        };
     }
 
-    // Convert bookingId to number (safe for Postgres)
     const bookingIdNum = Number(bookingId);
 
-    // Fetch booking
+
     const bookingResult = await pool.query(
         `SELECT * FROM bookings WHERE id=$1`,
         [bookingIdNum]
@@ -253,12 +203,20 @@ const updateBooking = async (bookingId: string, status: string, user: JwtPayload
     if (user.role === "customer") {
         // Customer can only cancel
         if (status !== "cancelled") {
-            return { statusCode: 403, success: false, message: "Customers can only cancel bookings" };
+            return {
+                statusCode: 403,
+                success: false,
+                message: "Customers can only cancel bookings"
+            };
         }
 
         // Only before rent_start_date
         if (now >= rentStart) {
-            return { statusCode: 400, success: false, message: "Booking cannot be cancelled after start date" };
+            return {
+                statusCode: 400,
+                success: false,
+                message: "Booking cannot be cancelled after start date"
+            };
         }
 
         const updated = await pool.query(
@@ -266,14 +224,22 @@ const updateBooking = async (bookingId: string, status: string, user: JwtPayload
             [bookingIdNum]
         );
 
-        return { statusCode: 200, success: true, message: "Booking cancelled successfully", data: updated.rows[0] };
+        return {
+            statusCode: 200,
+            success: true,
+            message: "Booking cancelled successfully",
+            data: updated.rows[0]
+        };
     }
 
     // -------- ADMIN --------
     if (user.role === "admin") {
-        // Admin can only mark returned
         if (status !== "returned") {
-            return { statusCode: 403, success: false, message: "Admin can only mark booking as returned" };
+            return {
+                statusCode: 403,
+                success: false,
+                message: "Admin can only mark booking as returned"
+            };
         }
 
         // Update booking status
@@ -300,12 +266,16 @@ const updateBooking = async (bookingId: string, status: string, user: JwtPayload
     }
 
     // Unknown role
-    return { statusCode: 403, success: false, message: "Access denied" };
+    return {
+        statusCode: 403,
+        success: false,
+        message: "Access denied"
+    };
 };
 
 export const bookingServices = {
     createBooking,
     getAllBooking,
-    getSingleBooking,
+
     updateBooking,
 };

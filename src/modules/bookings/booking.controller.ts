@@ -34,49 +34,6 @@ const getAllBooking = async (req: Request, res: Response) => {
     }
 }
 
-const getSingleBooking = async (req: Request, res: Response) => {
-    try {
-        const result = await bookingServices.getSingleBooking(req, req.params.bookingId!)
-        res.status(200).json(result)
-    } catch (error: any) {
-        return res.status(500).json({
-            success: false,
-            message: error.message,
-        });
-    }
-}
-
-// const updateBooking = async (req: Request, res: Response) => {
-//     try {
-//         const user: JwtPayload = req.user as JwtPayload;
-
-//         const bookingIdNum = Number(req.params.bookingId);
-//         if (isNaN(bookingIdNum)) {
-//             return res.status(400).json({
-//                 success: false,
-//                 message: "Invalid booking ID"
-//             });
-//         }
-
-//         const result = await bookingServices.updateBooking(
-//             bookingIdNum.toString(),
-//             req.body.status,
-//             user
-//         );
-
-//         return res.status(result.statusCode || 200).json({
-//             success: result.success,
-//             message: result.message,
-//             data: result.data || null
-//         });
-
-//     } catch (error: any) {
-//         return res.status(500).json({
-//             success: false,
-//             message: error.message
-//         });
-//     }
-// };
 
 const updateBooking = async (req: Request, res: Response) => {
     try {
@@ -105,6 +62,5 @@ const updateBooking = async (req: Request, res: Response) => {
 export const bookingControllers = {
     createBooking,
     getAllBooking,
-    getSingleBooking, 
     updateBooking, 
 }

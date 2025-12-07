@@ -98,7 +98,8 @@ const updateVehicle = async (req: Request, res: Response) => {
         if (result.rows.length > 0) {
             res.status(200).json({
                 success: true,
-                updatedData: result.rows[0]
+                message: "Vehicle updated successfully",
+                data: result.rows[0]
             })
         }
         else {

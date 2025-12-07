@@ -30,6 +30,9 @@ const deleteSingleVehicle = async (vehicleId: string) => {
 }
 
 const updateVehicle = async (id: string, payload: Record<string, unknown>) => {
+
+    const isExists = await pool.query(`SELECT * FROM bookings WHERE vehicle_id=$1 AND `)
+
     let query = "UPDATE vehicles SET ";
     const values: any[] = [];
     let index = 1;

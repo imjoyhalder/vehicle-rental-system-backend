@@ -12,11 +12,9 @@ router.post('/auth/signup', userControllers.createUser)
 //*--------get update and delete routes-----------------
 router.get('/users', authorize('admin'), userControllers.getAllUser); 
 
-router.get('/users/:id', authorize('admin','customer'), userControllers.getSingleUser)
-
 router.put('/users/:id', authorize('admin', 'customer') ,userControllers.updateUser)
 
-router.delete('/users/:id', authorize('admin', 'customer'), userControllers.deleteUser)
+router.delete('/users/:id', authorize('admin'), userControllers.deleteUser)
 
 
 export const userRoutes = router; 
