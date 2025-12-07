@@ -74,7 +74,7 @@ const getSingleBooking = async (req: Request, bookingId: string) => {
 
     const decoded = jwt.verify(token!, config.jwtSecret!) as JwtPayload
     console.log(decoded);
-
+    
     const booking = await pool.query(`SELECT * FROM bookings WHERE id=$1`, [bookingId])
 
     const customerId = booking.rows[0].customer_id
