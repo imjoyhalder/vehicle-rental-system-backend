@@ -1,6 +1,8 @@
-**Vehicle Rental System API**
+# Vehicle Rental System API
 
 A backend API for managing a vehicle rental system with role-based access control (Admin and Customer). The system handles vehicles, users, and bookings.
+
+## Live -> https://vehicle-rental-system-backend-two.vercel.app
 
 **Project Overview**
 The system allows:
@@ -13,11 +15,11 @@ Securing role-based access using JWT authentication
 
 **Technology Stack**
 
-Node.js + TypeScript
-Express.js
-PostgreSQL
-bcrypt for password hashing
-jsonwebtoken (JWT) for authentication
+- Node.js + TypeScript
+- Express.js
+- PostgreSQL
+- bcrypt for password hashing
+- jsonwebtoken (JWT) for authentication
 
 **Authentication & Authorization**
 
