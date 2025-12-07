@@ -73,6 +73,12 @@ const updateUser = async (id: string, payload: Record<string, unknown>) => {
 
 
 const deleteUser = async (id: string | undefined) => {
+
+    const isExists = await pool.query(`SELECT * FROM bookings WHERE customer_id=$1 AND status=$2`, [id, 'active'])
+    if(isExists.rows.length>0){
+        return "Active booking is available so you can't delete your account now";
+    }
+
     const result = await pool.query(`DELETE FROM users WHERE id=$1 RETURNING *`, [id])
     return result
 }
