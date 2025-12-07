@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { vehicleServices } from "./vehicles.service";
+import { json } from "stream/consumers";
 
 
 const createVehicle = async (req: Request, res: Response) => {
@@ -62,17 +63,25 @@ const getSingleVehicle = async (req: Request, res: Response) => {
 const deleteSingleVehicle = async (req: Request, res: Response) => {
     try {
         const result = await vehicleServices.deleteSingleVehicle(req.params.id!);
-        if (result.rowCount === 0) {
+        if (typeof result === 'string') {
             res.status(404).json({
                 success: false,
-                message: 'Vehicle not found'
+                message: result
             })
         }
         else {
-            res.status(200).json({
-                success: true,
-                message: 'Vehicle deleted successfully',
-            })
+            if (result.rowCount === 0) {
+                res.status(404).json({
+                    success: false,
+                    message: 'Vehicle not found'
+                })
+            }
+            else {
+                res.status(200).json({
+                    success: true,
+                    message: 'Vehicle deleted successfully',
+                })
+            }
         }
 
     } catch (error: any) {
@@ -83,8 +92,27 @@ const deleteSingleVehicle = async (req: Request, res: Response) => {
     }
 }
 
-const updateVehicle = async (req: Request, res: Response)=>{
-    
+const updateVehicle = async (req: Request, res: Response) => {
+    try {
+        const result = await vehicleServices.updateVehicle(req.params.id!, req.body)
+        if (result.rows.length > 0) {
+            res.status(200).json({
+                success: true,
+                updatedData: result.rows[0]
+            })
+        }
+        else {
+            res.status(404).json({
+                success: false,
+                message: "Vehicle not found"
+            })
+        }
+    } catch (error: any) {
+        res.status(500).json({
+            success: false,
+            error: error.message
+        })
+    }
 }
 
 export const vehicleControllers = {
@@ -92,4 +120,5 @@ export const vehicleControllers = {
     getAllVehicle,
     getSingleVehicle,
     deleteSingleVehicle,
+    updateVehicle,
 }

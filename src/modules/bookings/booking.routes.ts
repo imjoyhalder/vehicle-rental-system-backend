@@ -5,9 +5,11 @@ import authorize from "../../middleware/auth";
 
 const router = Router()
 
-router.post('/', bookingControllers.createBooking)
-router.get('/', authorize('admin'),bookingControllers.getAllBooking)
-router.get('/:id', bookingControllers.getSingleBooking)
+router.post('/',authorize('admin', 'customer'),bookingControllers.createBooking)
+router.get('/', authorize('admin', 'customer'),bookingControllers.getAllBooking)
+router.get('/:bookingId', authorize('admin', 'customer'), bookingControllers.getSingleBooking)
+router.put('/:bookingId', authorize('admin', 'customer'), bookingControllers.updateBooking)
+
 
 
 export const bookingRoutes = router; 

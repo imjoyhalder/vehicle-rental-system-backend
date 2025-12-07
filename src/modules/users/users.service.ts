@@ -32,8 +32,7 @@ const createUser = async (payload: Record<string, unknown>) => {
 }
 
 const getAllUser = async () => {
-    const result = await pool.query(`SELECT * FROM users`)
-    result.rows.map(user => delete user.password)
+    const result = await pool.query(`SELECT id, name, email, phone, role FROM users`)
     return result
 }
 
@@ -70,7 +69,6 @@ const updateUser = async (id: string, payload: Record<string, unknown>) => {
 
     return result;
 };
-
 
 const deleteUser = async (id: string | undefined) => {
 

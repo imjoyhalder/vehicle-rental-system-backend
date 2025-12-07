@@ -13,7 +13,6 @@ app.use(express.urlencoded())
 // Database call 
 initDB()
 
-
 app.get('/', (req: Request, res: Response)=>{
     res.status(200).json({
         message: "vehicle rental system server is running", 
@@ -21,7 +20,6 @@ app.get('/', (req: Request, res: Response)=>{
         path: req.path
     })
 })
-
 
 //*-------------- user routes-----------
 app.use('/api/v1/', userRoutes)
